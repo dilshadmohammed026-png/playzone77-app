@@ -6,7 +6,9 @@ import { getGames, saveGames, deleteGame, Game, logoutAdmin, initialGames, getAn
 import { useNavigate } from 'react-router-dom';
 
 import { auth } from '../lib/firebase';
-import { updateEmail, updatePassword } from 'firebase/auth';
+import { initializeApp, deleteApp } from 'firebase/app';
+import { updateEmail, updatePassword, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import firebaseConfig from '../../firebase-applet-config.json';
 import { ImageUploader } from '../components/ImageUploader';
 
 export function Admin() {
@@ -984,10 +986,7 @@ export function Admin() {
                                       try {
                                         // Dynamically update the credentials inside Firebase Auth
                                         const tempAppName = "TempAdminUpdateApp_" + Date.now();
-                                        const { initializeApp, deleteApp } = await import('firebase/app');
-                                        const { getAuth, signInWithEmailAndPassword, updatePassword, createUserWithEmailAndPassword } = await import('firebase/auth');
-                                        const firebaseConfig = await import('../../firebase-applet-config.json');
-                                        const tempApp = initializeApp(firebaseConfig.default, tempAppName);
+                                        const tempApp = initializeApp(firebaseConfig, tempAppName);
                                         const tempAuth = getAuth(tempApp);
                                         try {
                                           await signInWithEmailAndPassword(tempAuth, editingAdminEmail, existing.password);
@@ -1014,10 +1013,7 @@ export function Admin() {
                                     // 1. Create in Firebase Auth using temporary app instance
                                     try {
                                       const tempAppName = "TempAdminCreateApp_" + Date.now();
-                                      const { initializeApp, deleteApp } = await import('firebase/app');
-                                      const { getAuth, createUserWithEmailAndPassword } = await import('firebase/auth');
-                                      const firebaseConfig = await import('../../firebase-applet-config.json');
-                                      const tempApp = initializeApp(firebaseConfig.default, tempAppName);
+                                      const tempApp = initializeApp(firebaseConfig, tempAppName);
                                       const tempAuth = getAuth(tempApp);
                                       await createUserWithEmailAndPassword(tempAuth, emailVal, passVal);
                                       await deleteApp(tempApp);
@@ -1127,10 +1123,7 @@ export function Admin() {
                                             if (admin.password) {
                                               try {
                                                 const tempAppName = "TempAdminDeleteApp_" + Date.now();
-                                                const { initializeApp, deleteApp } = await import('firebase/app');
-                                                const { getAuth, signInWithEmailAndPassword } = await import('firebase/auth');
-                                                const firebaseConfig = await import('../../firebase-applet-config.json');
-                                                const tempApp = initializeApp(firebaseConfig.default, tempAppName);
+                                                const tempApp = initializeApp(firebaseConfig, tempAppName);
                                                 const tempAuth = getAuth(tempApp);
                                                 await signInWithEmailAndPassword(tempAuth, admin.email, admin.password);
                                                 if (tempAuth.currentUser) {
