@@ -104,13 +104,13 @@ export function Navbar() {
           <div className="flex items-center justify-between h-20">
             <Link to="/" onClick={handleLogoClick} className="flex items-center gap-2">
               {settings?.logoUrl ? (
-                <img src={settings.logoUrl} alt={siteName} className="h-10 object-contain max-w-[180px]" referrerPolicy="no-referrer" />
+                <img src={settings.logoUrl} alt={siteName} className="h-10 lg:h-12.5 object-contain max-w-[180px] lg:max-w-[225px]" referrerPolicy="no-referrer" />
               ) : (
                 <>
-                  <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-tr from-green-600 to-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]">
-                    <Crown size={20} className="text-white relative z-10" />
+                  <div className="relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-tr from-green-600 to-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                    <Crown className="text-white relative z-10 w-5 h-5 lg:w-6 lg:h-6" />
                   </div>
-                  <span className="text-2xl font-bold bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent uppercase tracking-wider select-none">
+                  <span className="text-2xl lg:text-[30px] font-bold bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent uppercase tracking-wider select-none">
                     {siteName.slice(0, 4)}<span className="text-white">{siteName.slice(4)}</span>
                   </span>
                 </>

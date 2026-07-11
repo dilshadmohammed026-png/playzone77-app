@@ -288,16 +288,32 @@ export const trackWebsiteView = async () => {
       sessionStorage.setItem(sessionKey, 'true');
     }
 
-    let ip = 'unknown-ip';
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1500);
-      const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-      clearTimeout(timeoutId);
-      const data = await res.json();
-      ip = data.ip;
-    } catch (e) {
-      // ignore
+    let ip = '';
+    if (typeof window !== 'undefined') {
+      try {
+        ip = localStorage.getItem('visitor_ip') || '';
+      } catch (e) {
+        // ignore
+      }
+    }
+    if (!ip) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1000);
+        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+        clearTimeout(timeoutId);
+        const data = await res.json();
+        ip = data.ip;
+        if (ip && typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('visitor_ip', ip);
+          } catch (e) {
+            // ignore
+          }
+        }
+      } catch (e) {
+        ip = 'unknown-ip';
+      }
     }
 
     const fingerprintStr = [
@@ -648,11 +664,22 @@ export const getAdAnalyticsEvents = async (): Promise<AdAnalyticsEvent[]> => {
 };
 
 export const subscribeSettings = (callback: (settings: AppSettings) => void) => {
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('playmaster_cached_settings');
+      if (cached) {
+        callback(JSON.parse(cached));
+      }
+    } catch (e) {
+      console.warn("Error reading cached settings:", e);
+    }
+  }
+
   const docRef = doc(db, 'analytics', 'settings_config');
   return onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
       const data = docSnap.data();
-      callback({
+      const settings = {
         adsenseEnabled: !!data.adsenseEnabled,
         adsenseTopCode: data.adsenseTopCode || '',
         adsenseMiddleCode: data.adsenseMiddleCode || '',
@@ -671,9 +698,17 @@ export const subscribeSettings = (callback: (settings: AppSettings) => void) => 
         adCodeSidebar: data.adCodeSidebar || '',
         adCodeStickyBanner: data.adCodeStickyBanner || '',
         adCodeInterstitial: data.adCodeInterstitial || ''
-      });
+      };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('playmaster_cached_settings', JSON.stringify(settings));
+        } catch (e) {
+          // ignore
+        }
+      }
+      callback(settings);
     } else {
-      callback({
+      const defaultSettings = {
         adsenseEnabled: false,
         adsenseTopCode: '',
         adsenseMiddleCode: '',
@@ -692,7 +727,8 @@ export const subscribeSettings = (callback: (settings: AppSettings) => void) => 
         adCodeSidebar: '',
         adCodeStickyBanner: '',
         adCodeInterstitial: ''
-      });
+      };
+      callback(defaultSettings);
     }
   }, (error) => {
     console.error("subscribeSettings error:", error);
@@ -700,13 +736,32 @@ export const subscribeSettings = (callback: (settings: AppSettings) => void) => 
 };
 
 export const subscribeGames = (callback: (games: Game[]) => void) => {
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('playmaster_cached_games');
+      if (cached) {
+        callback(JSON.parse(cached));
+      }
+    } catch (e) {
+      console.warn("Error reading cached games:", e);
+    }
+  }
+
   const colRef = collection(db, 'games');
   return onSnapshot(colRef, (querySnapshot) => {
     const games: Game[] = [];
     querySnapshot.forEach((doc) => {
       games.push({ ...doc.data(), id: Number(doc.id) } as Game);
     });
-    callback(games.sort((a, b) => b.id - a.id));
+    const sortedGames = games.sort((a, b) => b.id - a.id);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('playmaster_cached_games', JSON.stringify(sortedGames));
+      } catch (e) {
+        // ignore
+      }
+    }
+    callback(sortedGames);
   }, (error) => {
     console.error("subscribeGames error:", error);
   });

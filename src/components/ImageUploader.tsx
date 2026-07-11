@@ -149,22 +149,22 @@ export function ImageUploader({
           const isFavicon = labelLower.includes('favicon');
           const isLogo = labelLower.includes('logo');
 
-          // Smart max dimensions based on usage context
-          let maxWidth = 800;
-          let maxHeight = 450;
+          // Smart max dimensions based on usage context: keep full HD quality for logos and banners
+          let maxWidth = 1920;
+          let maxHeight = 1080;
 
           if (isFavicon) {
-            maxWidth = 48;
-            maxHeight = 48;
+            maxWidth = 128;
+            maxHeight = 128;
           } else if (isLogo) {
-            maxWidth = 280;
-            maxHeight = 80;
+            maxWidth = 1920;
+            maxHeight = 1080;
           } else if (aspectRatio === 'square') {
-            maxWidth = 180;
-            maxHeight = 180;
+            maxWidth = 1080;
+            maxHeight = 1080;
           } else {
-            maxWidth = 600;
-            maxHeight = 300;
+            maxWidth = 1920;
+            maxHeight = 1080;
           }
 
           if (width > maxWidth) {
@@ -182,10 +182,10 @@ export function ImageUploader({
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
             
-            // Format-aware compression: preserve transparency for PNG, compress JPEG for small footprint
+            // Format-aware compression: preserve transparency for PNG, compress JPEG lightly for high resolution
             const isPng = file.type === 'image/png' || file.name.toLowerCase().endsWith('.png');
             const mimeType = isPng ? 'image/png' : 'image/jpeg';
-            const quality = isPng ? undefined : 0.80; // 80% JPEG is perfect and keeps size under 30KB
+            const quality = isPng ? undefined : 0.95; // 95% JPEG provides full HD clarity with virtually no compression artifacts
             
             const dataUrl = canvas.toDataURL(mimeType, quality);
             uploadToStorage(dataUrl, file.name);

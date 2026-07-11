@@ -151,43 +151,10 @@ export function Home() {
       return;
     }
 
-    const proceedWithDownload = async () => {
-      const updatedGames = games.map(g => g.id === game.id ? { ...g, downloadClicks: (g.downloadClicks || 0) + 1 } : g);
-      setGames(updatedGames);
-      await trackEvent(game.id, 'download');
-      window.open(downloadUrl, '_blank');
-    };
-
-    // Randomly show an Adsterra Social Bar or Popunder (50% probability)
-    const triggerAd = Math.random() < 0.50;
-    if (triggerAd && games.length > 0) {
-      const isPopunder = Math.random() < 0.50;
-
-      if (isPopunder) {
-        // Popunder: Open Adsterra link or landing page, then proceed with download immediately
-        const popUrl = settings?.websiteReferralUrl || 'https://play777.in';
-        try {
-          window.open(popUrl, '_blank');
-          await trackAdEvent('click', 'download_popunder');
-        } catch (e) {
-          console.warn('Popunder blocked or failed:', e);
-        }
-        await proceedWithDownload();
-      } else {
-        // Social Bar (Interstitial with 5s countdown)
-        const otherGames = games.filter(g => g.id !== game.id);
-        const chosenPromo = otherGames.length > 0 ? otherGames[Math.floor(Math.random() * otherGames.length)] : games[Math.floor(Math.random() * games.length)];
-        
-        setInterstitialPromoGame(chosenPromo);
-        setInterstitialAdUnit('download_interstitial');
-        setInterstitialOnClose(() => () => {
-          proceedWithDownload();
-        });
-        setInterstitialAdOpen(true);
-      }
-    } else {
-      await proceedWithDownload();
-    }
+    const updatedGames = games.map(g => g.id === game.id ? { ...g, downloadClicks: (g.downloadClicks || 0) + 1 } : g);
+    setGames(updatedGames);
+    await trackEvent(game.id, 'download');
+    window.open(downloadUrl, '_blank');
   };
 
   const handleDetailsClick = async (game: Game) => {
